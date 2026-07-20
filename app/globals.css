@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #09090b;
+  --muted: #52525b;
+  --card: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --nav-bg: rgba(248, 250, 252, 0.85);
+  --accent: #0891b2;
+  --accent-dim: rgba(8, 145, 178, 0.1);
+  --violet: #7c3aed;
+  --danger: #dc2626;
+  --success: #059669;
+  --grid-line: rgba(0, 0, 0, 0.04);
+  --glow-cyan: rgba(8, 145, 178, 0.12);
+  --glow-violet: rgba(124, 58, 237, 0.08);
+}
+
+.dark {
+  --background: #06080f;
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --card: #0f1219;
+  --card-border: rgba(255, 255, 255, 0.06);
+  --nav-bg: rgba(6, 8, 15, 0.85);
+  --accent: #22d3ee;
+  --accent-dim: rgba(34, 211, 238, 0.12);
+  --violet: #a78bfa;
+  --danger: #f87171;
+  --success: #34d399;
+  --grid-line: rgba(255, 255, 255, 0.03);
+  --glow-cyan: rgba(34, 211, 238, 0.15);
+  --glow-violet: rgba(167, 139, 250, 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-violet: var(--violet);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.grid-bg {
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+}
+
+.glow-orb {
+  background: radial-gradient(
+    circle,
+    var(--glow-cyan) 0%,
+    var(--glow-violet) 40%,
+    transparent 70%
+  );
 }
