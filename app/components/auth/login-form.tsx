@@ -6,7 +6,6 @@ import { AuthDivider } from "./auth-divider";
 import { GoogleButton } from "./google-button";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "@/lib/auth-client";
-
 const inputClassName =
   "w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
 
@@ -127,6 +126,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              
               className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
@@ -156,9 +156,11 @@ export function LoginForm() {
 
         <button
           type="submit"
+          disabled = {isLoading}
           className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-400 py-3 text-sm font-semibold text-zinc-900 shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40"
         >
-          Sign in
+         {isLoading ? "Signing in ...": " Sign in"}
+        
         </button>
       </form>
 

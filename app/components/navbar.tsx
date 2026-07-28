@@ -1,6 +1,7 @@
+"use client"
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
-
+import { useSession } from "@/lib/auth-client";
 const navLinks = [
   { label: "Features", href: "/#features" },
   { label: "How it works", href: "/#how-it-works" },
@@ -9,6 +10,7 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const {data: session, isPending} = useSession();
   return (
     <header
       className="fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl"
@@ -52,10 +54,10 @@ export function Navbar() {
           ))}
           <ThemeToggle />
           <Link
-            href="/dashboard"
+            href={(!isPending && session?.user)?"/dashboard": "/login"}
             className="ml-1 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-zinc-800 hover:shadow-lg dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:hover:shadow-white/10"
           >
-            Dashboard
+            {(!isPending && session?.user)? "Dashboard": "Get Started"}
             <svg
               viewBox="0 0 16 16"
               fill="none"
