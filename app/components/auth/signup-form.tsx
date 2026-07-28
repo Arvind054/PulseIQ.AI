@@ -1,21 +1,75 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AuthDivider } from "./auth-divider";
 import { GoogleButton } from "./google-button";
-
+import { signUp, signIn, useSession } from "@/lib/auth-client";
 const inputClassName =
   "w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-cyan-400 dark:focus:ring-cyan-400/20";
 
 export function SignupForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: session, isPending } = useSession();
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // If session already exists return to daasboard;
+  useEffect(() => {
+    if (!isPending && session?.user) {
+      router.push("/dashboard");
+    };
+    return;
+  }, [isPending, session]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      // Small delay to allow OAuth redirect to complete if successful
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // Function to Handle the submit for signup
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError("");
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters")
+      return;
+    }
+
+    setIsLoading(true)
+
+    try {
+      const { error } = await signUp.email({
+        name,
+        email,
+        password,
+      })
+
+      if (error) {
+        setError(error.message || "Failed to create account")
+        setIsLoading(false)
+        return
+      }
+
+      router.push("/dashboard")
+      router.refresh()
+    } catch (err) {
+      setError("An unexpected error occurred")
+      setIsLoading(false)
+    }
   }
 
   return (
