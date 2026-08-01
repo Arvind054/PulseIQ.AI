@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
 
         //Get the API Key from header
         const apiKey = req.headers.get("x-api-key");
-
         if (!apiKey) {
             return NextResponse.json({ success: false, message: "API Key is required", },
                 { status: 401, headers: corsHeaders, });

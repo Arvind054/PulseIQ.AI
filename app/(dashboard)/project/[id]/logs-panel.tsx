@@ -37,6 +37,19 @@ function formatTime(value?: string | Date) {
   }).format(date);
 }
 
+function formatMetadataValue(value: unknown) {
+  if (!value) return "—";
+
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 export function LogsPanel({ projectId }: LogsPanelProps) {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -44,7 +57,9 @@ export function LogsPanel({ projectId }: LogsPanelProps) {
   const [level, setLevel] = useState("all");
   const [service, setService] = useState("");
   const [environment, setEnvironment] = useState("all");
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,7 +75,7 @@ export function LogsPanel({ projectId }: LogsPanelProps) {
       if (level !== "all") params.set("level", level);
       if (service.trim()) params.set("service", service.trim());
       if (environment !== "all") params.set("environment", environment);
-      if (search.trim()) params.set("search", search.trim());
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
 
       const response = await fetch(`/api/logs?${params.toString()}`);
       const data = await response.json();
@@ -74,7 +89,20 @@ export function LogsPanel({ projectId }: LogsPanelProps) {
     }
 
     fetchLogs();
-  }, [page, level, service, environment, search, projectId]);
+  }, [page, level, service, environment, searchQuery, projectId]);
+
+  function handleSearch() {
+    setPage(1);
+    setExpandedLogId(null);
+    setSearchQuery(searchInput.trim());
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSearch();
+    }
+  }
 
   return (
     <div className="rounded-[24px] border border-[color:var(--card-border)] bg-[var(--card)] p-5 shadow-sm">
@@ -128,16 +156,21 @@ export function LogsPanel({ projectId }: LogsPanelProps) {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <input
-          value={search}
-          onChange={(e) => {
-            setPage(1);
-            setSearch(e.target.value);
-          }}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Search logs by text or service"
-          className="w-full rounded-xl border border-[color:var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[color:var(--accent)]"
+          className="flex-1 rounded-xl border border-[color:var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[color:var(--accent)]"
         />
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="rounded-xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+        >
+          Search
+        </button>
       </div>
 
       <div className="mt-5 space-y-3">
@@ -150,27 +183,80 @@ export function LogsPanel({ projectId }: LogsPanelProps) {
             No logs match your current filters.
           </div>
         ) : (
-          logs.map((log) => (
-            <div key={log._id} className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--background)] p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-[color:var(--accent-dim)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--accent)]">
-                    {log.level}
-                  </span>
-                  <span className="text-sm font-medium text-[var(--foreground)]">{log.service}</span>
+          logs.map((log) => {
+            const isExpanded = expandedLogId === log._id;
+
+            return (
+              <div key={log._id} className="rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--background)] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-[color:var(--accent-dim)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--accent)]">
+                      {log.level}
+                    </span>
+                    <span className="text-sm font-medium text-[var(--foreground)]">{log.service}</span>
+                  </div>
+                  <span className="text-xs text-[color:var(--muted)]">{formatTime(log.timestamp)}</span>
                 </div>
-                <span className="text-xs text-[color:var(--muted)]">{formatTime(log.timestamp)}</span>
+
+                <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{log.message}</p>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                  {log.environment ? (
+                    <p className="text-xs uppercase tracking-[0.25em] text-[color:var(--muted)]">
+                      {log.environment}
+                    </p>
+                  ) : (
+                    <span className="text-xs uppercase tracking-[0.25em] text-[color:var(--muted)]">
+                      No environment
+                    </span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setExpandedLogId(isExpanded ? null : log._id)}
+                    className="text-sm font-semibold text-[color:var(--accent)]"
+                  >
+                    {isExpanded ? "Hide details" : "View details"}
+                  </button>
+                </div>
+
+                {isExpanded ? (
+                  <div className="mt-4 space-y-3 rounded-2xl border border-[color:var(--card-border)] bg-[color:var(--accent-dim)] p-3 text-sm">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--muted)]">
+                          Timestamp
+                        </p>
+                        <p className="mt-1 text-[var(--foreground)]">{formatTime(log.timestamp)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--muted)]">
+                          Service
+                        </p>
+                        <p className="mt-1 text-[var(--foreground)]">{log.service || "—"}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--muted)]">
+                        Environment
+                      </p>
+                      <p className="mt-1 text-[var(--foreground)]">{log.environment || "—"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--muted)]">
+                        Metadata
+                      </p>
+                      <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-xs text-[color:var(--muted)]">
+                        {formatMetadataValue(log.metadata)}
+                      </pre>
+                    </div>
+                  </div>
+                ) : null}
               </div>
-
-              <p className="mt-3 text-sm leading-6 text-[var(--foreground)]">{log.message}</p>
-
-              {log.environment ? (
-                <p className="mt-2 text-xs uppercase tracking-[0.25em] text-[color:var(--muted)]">
-                  {log.environment}
-                </p>
-              ) : null}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
