@@ -4,6 +4,8 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/src/DB/DbConnection";
 import { Project } from "@/src/DB/models/projectSchema";
+import { Navbar } from "@/app/components/navbar";
+import { LogsPanel } from "./logs-panel";
 
 function formatDate(value?: Date | string) {
   if (!value) return "—";
@@ -46,17 +48,18 @@ export default async function ProjectPage({
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl rounded-[24px] border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-600">
+      <div className="min-h-screen bg-[var(--background)] px-4 pb-10 pt-24 text-[var(--foreground)] sm:px-6 lg:px-8 lg:pt-28">
+        <Navbar />
+        <div className="mx-auto max-w-4xl rounded-[24px] border border-[color:var(--card-border)] bg-[var(--card)] p-8 text-center shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)]">
             Project not found
           </p>
-          <h1 className="mt-3 text-2xl font-semibold text-slate-900">
+          <h1 className="mt-3 text-2xl font-semibold text-[var(--foreground)]">
             We could not find this project.
           </h1>
           <Link
             href="/dashboard"
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
             Back to dashboard
           </Link>
@@ -66,61 +69,66 @@ export default async function ProjectPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
+    <div className="min-h-screen bg-[var(--background)] px-4 pb-10 pt-24 text-[var(--foreground)] sm:px-6 lg:px-8 lg:pt-28">
+      <Navbar />
+      <div className="mx-auto max-w-5xl rounded-[28px] border border-[color:var(--card-border)] bg-[var(--card)] p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-4 border-b border-[color:var(--card-border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)]">
               Project workspace
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-slate-900">
+            <h1 className="mt-3 text-3xl font-semibold text-[var(--foreground)]">
               {project.name}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[color:var(--muted)]">
               {project.description?.trim() || "No project description has been added yet."}
             </p>
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="inline-flex items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
             Back to dashboard
           </Link>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Project overview</h2>
+          <div className="rounded-[24px] border border-[color:var(--card-border)] bg-[color:var(--accent-dim)] p-5">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Project overview</h2>
             <div className="mt-5 space-y-4">
               <div>
-                <p className="text-sm font-medium text-slate-500">Created</p>
-                <p className="mt-1 text-sm text-slate-700">{formatDate(project.createdAt)}</p>
+                <p className="text-sm font-medium text-[color:var(--muted)]">Created</p>
+                <p className="mt-1 text-sm text-[var(--foreground)]">{formatDate(project.createdAt)}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Last updated</p>
-                <p className="mt-1 text-sm text-slate-700">{formatDate(project.updatedAt)}</p>
+                <p className="text-sm font-medium text-[color:var(--muted)]">Last updated</p>
+                <p className="mt-1 text-sm text-[var(--foreground)]">{formatDate(project.updatedAt)}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Project ID</p>
-                <p className="mt-1 break-all font-mono text-sm text-slate-700">{String(project._id)}</p>
+                <p className="text-sm font-medium text-[color:var(--muted)]">Project ID</p>
+                <p className="mt-1 break-all font-mono text-sm text-[var(--foreground)]">{String(project._id)}</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-            <h2 className="text-lg font-semibold text-slate-900">API access</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+          <div className="rounded-[24px] border border-[color:var(--card-border)] bg-[color:var(--background)] p-5">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">API access</h2>
+            <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">
               Use this API key to connect your integrations and services.
             </p>
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">
+            <div className="mt-4 rounded-2xl border border-[color:var(--card-border)] bg-[var(--card)] p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[color:var(--muted)]">
                 API key
               </p>
-              <p className="mt-2 break-all font-mono text-sm text-slate-700">
+              <p className="mt-2 break-all font-mono text-sm text-[var(--foreground)]">
                 {project.apiKey}
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-8">
+          <LogsPanel projectId={String(project._id)} />
         </div>
       </div>
     </div>
