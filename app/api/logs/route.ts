@@ -1,7 +1,9 @@
 
+import { auth } from "@/lib/auth";
 import { connectDB } from "@/src/DB/DbConnection";
 import { Log } from "@/src/DB/models/logSchema";
 import { Project } from "@/src/DB/models/projectSchema";
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 const corsHeaders = {
@@ -75,7 +77,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-    try {
+    try { 
+         const session = await auth.api.getSession({ headers: await headers()});
+                   if(!session?.user?.id){
+                    return NextResponse.json({error: "Unauthorized"}, {status: 401});
+                   }
         await connectDB();
 
         const { searchParams } = new URL(req.url);
