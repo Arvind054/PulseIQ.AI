@@ -3,7 +3,7 @@ import { connectDB } from "@/src/DB/DbConnection";
 import { Incident } from "@/src/DB/models/incidentSchemas";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-
+// Get Incidents by Project.
 export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });

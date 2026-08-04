@@ -23,6 +23,8 @@ export const IncidentSchema = new mongoose.Schema({
         enum: ["OPEN", "INVESTIGATING", "RESOLVED"],
         default: "OPEN",
     },
+    firstSeen: Date,
+    lastSeen: Date,
     summary:{
         type: String,
         default: "",
