@@ -3,9 +3,10 @@ import { connectDB } from "../DB/DbConnection";
 import { Log } from "../DB/models/logSchema";
 import { Incident } from "../DB/models/incidentSchemas";
 import { getAiSuggestions } from "./AiSuggestions";
+import { AiAnalysis } from "../DB/models/AiAnalysisSchema";
 
 
-export async function DetectIncidents(projectId: mongoose.Types.ObjectId, service: string, severity : string) {
+export async function DetectIncidents(projectId: mongoose.Types.ObjectId, service: string, environment: string, severity : string) {
 
     try {
         await connectDB();
@@ -38,9 +39,16 @@ export async function DetectIncidents(projectId: mongoose.Types.ObjectId, servic
             });
             return ;
         };
-        const AiSuggestions = getAiSuggestions(errorLogs);
-
-        await Incident.create({
+        const suggestionsData = await getAiSuggestions(service, environment, severity, errorLogs);
+       const suggestion = await AiAnalysis.create({
+        summary: suggestionsData.summary,
+        rootCause: suggestionsData.rootCause,
+        recommendation: suggestionsData.recommendation,
+        model:suggestionsData.model ,
+        evidence: suggestionsData.evidence,
+        confidence: suggestionsData.confidence,
+    })
+       const incident =  await Incident.create({
             projectId,
             service,
             title: `${service} experiencing error.`,
@@ -49,7 +57,7 @@ export async function DetectIncidents(projectId: mongoose.Types.ObjectId, servic
             relatedLogs: errorLogs.map(log => log._id),
             firstSeen: errorLogs[0].createdAt,
             lastSeen: errorLogs[errorLogs.length - 1].createdAt,
-            aiSuggestions: AiSuggestions,
+            aiSuggestions:suggestion._id,
         });
 
     } catch (err) {

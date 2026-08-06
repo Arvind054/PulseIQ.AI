@@ -34,8 +34,9 @@ export const IncidentSchema = new mongoose.Schema({
         default: "",
     },
     aiSuggestions:{
-        type: String,
-        default: "",
+        type: mongoose.Schema.Types.ObjectId,
+           ref: "AiAnalysis",
+           required: true,
     },
     relatedLogs:[{
         type: mongoose.Schema.Types.ObjectId,
