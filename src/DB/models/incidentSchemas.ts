@@ -20,9 +20,11 @@ export const IncidentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["OPEN", "INVESTIGATING", "RESOLVED"],
+        enum: ["OPEN", "INVESTIGATING", "RESOLVED", "CLOSED"],
         default: "OPEN",
     },
+    firstSeen: Date,
+    lastSeen: Date,
     summary:{
         type: String,
         default: "",
@@ -32,8 +34,9 @@ export const IncidentSchema = new mongoose.Schema({
         default: "",
     },
     aiSuggestions:{
-        type: String,
-        default: "",
+        type: mongoose.Schema.Types.ObjectId,
+           ref: "AiAnalysis",
+           required: true,
     },
     relatedLogs:[{
         type: mongoose.Schema.Types.ObjectId,
