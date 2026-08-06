@@ -26,14 +26,24 @@ type LogItem = {
   metadata?: Record<string, unknown>;
 };
 
+type AiSuggestion = {
+  _id?: string;
+  summary?: string;
+  rootCause?: string;
+  recommendation?: string;
+  model?: string;
+  evidence?: string;
+  confidence?: number;
+};
+
 type Incident = {
   _id: string;
   title: string;
   serverity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-  status: "OPEN" | "INVESTIGATING" | "RESOLVED";
-  summary: string;
-  rootCause: string;
-  aiSuggestions: string;
+  status: "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED";
+  summary?: string;
+  rootCause?: string;
+  aiSuggestions?: AiSuggestion | string | null;
   relatedLogs?: LogItem[];
   createdAt: string;
 };
@@ -223,22 +233,22 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
     except Exception as e:
         print(f"Failed to route log: {e}")`;
 
-  const openIncidentsCount = incidents.filter(i => i.status !== "RESOLVED").length;
+  const openIncidentsCount = incidents.filter((i) => i.status === "OPEN" || i.status === "INVESTIGATING").length;
 
   return (
     <div className="mx-auto max-w-5xl">
       {/* Workspace Header info */}
-      <div className="flex flex-col gap-4 border-b border-[color:var(--card-border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-(--card-border) pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">
             <Link href="/dashboard" className="hover:underline transition">Dashboard</Link>
             <span>/</span>
-            <span className="text-[color:var(--muted)]">Project Workspace</span>
+            <span className="text-muted">Project Workspace</span>
           </div>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
             {project.name}
           </h1>
-          <p className="mt-2 text-sm text-[color:var(--muted)] leading-relaxed max-w-2xl">
+          <p className="mt-2 text-sm text-muted leading-relaxed max-w-2xl">
             {project.description?.trim() || "No workspace configuration has been set. Review settings to modify details."}
           </p>
         </div>
@@ -253,7 +263,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
       </div>
 
       {/* Tabs Selector Navigation Bar */}
-      <div className="mt-6 flex border-b border-[color:var(--card-border)]">
+      <div className="mt-6 flex border-b border-(--card-border)">
         <button
           type="button"
           onClick={() => setActiveTab("logs")}
@@ -307,18 +317,18 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
         {activeTab === "incidents" && (
           <div className="space-y-4">
             {loadingIncidents && incidents.length === 0 ? (
-              <div className="rounded-[24px] border border-[color:var(--card-border)] bg-[var(--card)] p-8 text-center text-sm text-[color:var(--muted)]">
+              <div className="rounded-3xl border border-(--card-border) bg-card p-8 text-center text-sm text-muted">
                 Fetching active incident evaluations...
               </div>
             ) : incidents.length === 0 ? (
-              <div className="rounded-[28px] border border-dashed border-[color:var(--card-border)] bg-[var(--card)] p-10 text-center">
+              <div className="rounded-3xl border border-dashed border-(--card-border) bg-card p-10 text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <h3 className="mt-4 text-base font-bold">All systems healthy</h3>
-                <p className="mx-auto mt-2 max-w-sm text-xs text-[color:var(--muted)] leading-relaxed">
+                <p className="mx-auto mt-2 max-w-sm text-xs text-muted leading-relaxed">
                   No anomalous log patterns or cascade failure trends have been logged. Switch to the <b>Workspace Settings</b> tab to simulate an incident flow.
                 </p>
               </div>
@@ -338,21 +348,22 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                     OPEN: "bg-red-500 text-white dark:bg-red-400/20 dark:text-red-400 border border-red-500/30",
                     INVESTIGATING: "bg-amber-500 text-white dark:bg-amber-400/20 dark:text-amber-400 border border-amber-500/30",
                     RESOLVED: "bg-emerald-500 text-white dark:bg-emerald-400/20 dark:text-emerald-400 border border-emerald-500/30",
+                    CLOSED: "bg-zinc-500 text-white dark:bg-zinc-400/20 dark:text-zinc-300 border border-zinc-500/30",
                   };
 
                   return (
                     <div
                       key={incident._id}
-                      className={`overflow-hidden rounded-[24px] border bg-[var(--card)] transition-all shadow-sm ${
+                      className={`overflow-hidden rounded-3xl border bg-card transition-all shadow-sm ${
                         isExpanded
                           ? "border-cyan-500/40 ring-1 ring-cyan-500/10"
-                          : "border-[color:var(--card-border)] hover:border-zinc-350 dark:hover:border-zinc-850"
+                          : "border-(--card-border) hover:border-zinc-350 dark:hover:border-zinc-850"
                       }`}
                     >
                       {/* Incident Card summary bar */}
                       <div
                         onClick={() => setExpandedIncidentId(isExpanded ? null : incident._id)}
-                        className="flex cursor-pointer flex-wrap items-center justify-between gap-3 p-5 hover:bg-zinc-50 dark:hover:bg-white/[0.01]"
+                        className="flex cursor-pointer flex-wrap items-center justify-between gap-3 p-5 hover:bg-zinc-50 dark:hover:bg-white/1"
                       >
                         <div className="flex flex-1 items-start gap-3">
                           <div className="mt-1 shrink-0">
@@ -373,7 +384,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                             <h4 className="font-bold text-zinc-950 dark:text-white sm:text-base leading-snug">
                               {incident.title}
                             </h4>
-                            <p className="mt-1 text-xs text-[color:var(--muted)]">
+                            <p className="mt-1 text-xs text-muted">
                               Detected {new Date(incident.createdAt).toLocaleString()}
                             </p>
                           </div>
@@ -400,9 +411,9 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
 
                       {/* Incident detailed diagnostics */}
                       {isExpanded && (
-                        <div className="border-t border-[color:var(--card-border)] bg-zinc-50/50 dark:bg-white/[0.01] p-6 space-y-6">
+                        <div className="border-t border-(--card-border) bg-zinc-50/50 dark:bg-white/1 p-6 space-y-6">
                           {/* Failure Chain Visual */}
-                          <div className="rounded-2xl border border-[color:var(--card-border)] bg-[var(--card)] p-5">
+                          <div className="rounded-2xl border border-(--card-border) bg-card p-5">
                             <h5 className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
                               Failure Propagation Chain
                             </h5>
@@ -444,15 +455,15 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-xs text-[color:var(--muted)]">Service topology cascade mapping unavailable.</span>
+                                <span className="text-xs text-muted">Service topology cascade mapping unavailable.</span>
                               )}
                             </div>
                           </div>
 
                           {/* Analysis and Root Causes */}
                           <div className="grid gap-6 md:grid-cols-2">
-                            <div className="rounded-2xl border border-[color:var(--card-border)] bg-[var(--card)] p-5">
-                              <h5 className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--muted)]">
+                            <div className="rounded-2xl border border-(--card-border) bg-card p-5">
+                              <h5 className="text-[10px] font-bold uppercase tracking-wider text-muted">
                                 Incident Summary
                               </h5>
                               <p className="mt-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
@@ -460,8 +471,8 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                               </p>
                             </div>
 
-                            <div className="rounded-2xl border border-[color:var(--card-border)] bg-[var(--card)] p-5">
-                              <h5 className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--muted)]">
+                            <div className="rounded-2xl border border-(--card-border) bg-card p-5">
+                              <h5 className="text-[10px] font-bold uppercase tracking-wider text-muted">
                                 Root Cause Pinpoint
                               </h5>
                               <p className="mt-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
@@ -471,52 +482,68 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                           </div>
 
                           {/* Suggestions */}
-                          <div className="rounded-2xl border border-cyan-500/10 bg-cyan-500/[0.02] p-5">
+                          <div className="rounded-2xl border border-cyan-500/10 bg-cyan-500/2 p-5">
                             <h5 className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
                               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                               </svg>
                               AI Recommendation Engine
                             </h5>
-                            <div className="mt-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-line pl-1.5 space-y-1">
-                              {incident.aiSuggestions.split('\n').map((item, index) => (
-                                <p key={index} className="flex items-start gap-1.5">
-                                  <span className="text-cyan-500 font-bold select-none">•</span>
-                                  <span>{item.replace(/^\d+\.\s*/, "")}</span>
+                            {typeof incident.aiSuggestions === "object" && incident.aiSuggestions ? (
+                              <div className="mt-3 space-y-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+                                <p>
+                                  <span className="font-semibold text-zinc-900 dark:text-white">Summary: </span>
+                                  {incident.aiSuggestions.summary || incident.summary || "No summary available."}
                                 </p>
-                              ))}
-                            </div>
+                                <p>
+                                  <span className="font-semibold text-zinc-900 dark:text-white">Root cause: </span>
+                                  {incident.aiSuggestions.rootCause || incident.rootCause || "No root cause available."}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-zinc-900 dark:text-white">Evidence: </span>
+                                  {incident.aiSuggestions.evidence || "No evidence provided."}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-zinc-900 dark:text-white">Recommendation: </span>
+                                  {incident.aiSuggestions.recommendation || "No recommendation provided."}
+                                </p>
+                                <div className="flex flex-wrap gap-2 pt-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+                                  <span className="rounded-full bg-cyan-500/10 px-2 py-1">Model: {incident.aiSuggestions.model || "unknown"}</span>
+                                  <span className="rounded-full bg-cyan-500/10 px-2 py-1">Confidence: {incident.aiSuggestions.confidence ?? 0}%</span>
+                                </div>
+                              </div>
+                            ) : typeof incident.aiSuggestions === "string" ? (
+                              <div className="mt-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-line pl-1.5 space-y-1">
+                                {incident.aiSuggestions.split("\n").map((item, index) => (
+                                  <p key={index} className="flex items-start gap-1.5">
+                                    <span className="text-cyan-500 font-bold select-none">•</span>
+                                    <span>{item.replace(/^\d+\.\s*/, "")}</span>
+                                  </p>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="mt-3 text-xs text-muted">
+                                No AI suggestion linked to this incident yet.
+                              </p>
+                            )}
                           </div>
 
                           {/* Diagnostics Actions Bar */}
-                          <div className="flex border-t border-[color:var(--card-border)] pt-4 items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {incident.status !== "RESOLVED" ? (
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateIncidentStatus(incident._id, "RESOLVED")}
-                                  className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow shadow-emerald-500/10 transition hover:bg-emerald-700 active:scale-98"
-                                >
-                                  Mark resolved
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateIncidentStatus(incident._id, "OPEN")}
-                                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 dark:border-white/5 bg-[var(--card)] px-4 py-2 text-xs font-semibold text-rose-500 transition hover:bg-rose-500/5 active:scale-98"
-                                >
-                                  Re-open incident
-                                </button>
-                              )}
-                              {incident.status === "OPEN" && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateIncidentStatus(incident._id, "INVESTIGATING")}
-                                  className="inline-flex items-center justify-center rounded-xl border border-[color:var(--card-border)] bg-[var(--card)] px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition hover:bg-zinc-50 dark:hover:bg-white/5"
-                                >
-                                  Acknowledge Log
-                                </button>
-                              )}
+                          <div className="flex border-t border-(--card-border) pt-4 items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-muted">
+                                Status
+                              </label>
+                              <select
+                                value={incident.status}
+                                onChange={(e) => handleUpdateIncidentStatus(incident._id, e.target.value as Incident["status"])}
+                                className="rounded-xl border border-(--card-border) bg-card px-3 py-2 text-xs font-semibold text-zinc-700 outline-none transition focus:border-cyan-500 dark:text-zinc-300"
+                              >
+                                <option value="OPEN">Open</option>
+                                <option value="INVESTIGATING">Investigating</option>
+                                <option value="RESOLVED">Resolved</option>
+                                <option value="CLOSED">Closed</option>
+                              </select>
                             </div>
 
                             <button
@@ -540,7 +567,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
         {activeTab === "settings" && (
           <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
             {/* Project Config Form */}
-            <div className="rounded-[28px] border border-[color:var(--card-border)] bg-[var(--card)] p-6 shadow-sm">
+            <div className="rounded-3xl border border-(--card-border) bg-card p-6 shadow-sm">
               <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white">Workspace Configuration</h3>
               <form onSubmit={handleSaveSettings} className="mt-4 space-y-4">
                 <div>
@@ -595,7 +622,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
             {/* API Key and simulation setup */}
             <div className="space-y-6">
               {/* Credentials Card */}
-              <div className="rounded-[28px] border border-[color:var(--card-border)] bg-[var(--card)] p-6 shadow-sm space-y-4">
+              <div className="rounded-3xl border border-(--card-border) bg-card p-6 shadow-sm space-y-4">
                 <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white">Credentials & Auth</h3>
                 
                 <div>
@@ -612,7 +639,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                   <CopyBadge value={project.apiKey} className="w-full justify-between" />
                 </div>
 
-                <div className="border-t border-[color:var(--card-border)] pt-4">
+                <div className="border-t border-(--card-border) pt-4">
                   <button
                     type="button"
                     onClick={handleRegenerateKey}
@@ -624,9 +651,9 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
               </div>
 
               {/* Ingestion guide quick triggers */}
-              <div className="rounded-[28px] border border-[color:var(--card-border)] bg-[var(--card)] p-6 shadow-sm space-y-3">
+              <div className="rounded-3xl border border-(--card-border) bg-card p-6 shadow-sm space-y-3">
                 <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white">Workspace Quickstart</h3>
-                <p className="text-xs leading-relaxed text-[color:var(--muted)]">
+                <p className="text-xs leading-relaxed text-muted">
                   Populate this project target immediately with a cluster sequence of 6 logging events and AI failures cascading details.
                 </p>
                 <SimulateButton
@@ -638,8 +665,8 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
             </div>
 
             {/* Code snippets block */}
-            <div className="rounded-[28px] border border-[color:var(--card-border)] bg-[var(--card)] p-6 shadow-sm md:col-span-2">
-              <div className="flex border-b border-[color:var(--card-border)] pb-3 items-center justify-between">
+            <div className="rounded-3xl border border-(--card-border) bg-card p-6 shadow-sm md:col-span-2">
+              <div className="flex border-b border-(--card-border) pb-3 items-center justify-between">
                 <h4 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-white">Integration Snippets</h4>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -673,7 +700,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
               </div>
 
               <div className="mt-4 relative">
-                <pre className="overflow-x-auto rounded-2xl bg-zinc-900 text-zinc-300 dark:bg-white/[0.02] border border-zinc-200/50 dark:border-white/5 p-4 font-mono text-xs leading-relaxed max-h-80 select-all">
+                <pre className="overflow-x-auto rounded-2xl bg-zinc-900 text-zinc-300 dark:bg-white/2 border border-zinc-200/50 dark:border-white/5 p-4 font-mono text-xs leading-relaxed max-h-80 select-all">
                   {integrationLang === "curl" && curlSnippet}
                   {integrationLang === "node" && nodeSnippet}
                   {integrationLang === "python" && pythonSnippet}
@@ -686,3 +713,4 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
     </div>
   );
 }
+

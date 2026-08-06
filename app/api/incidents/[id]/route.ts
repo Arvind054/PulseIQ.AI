@@ -22,7 +22,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Incident ID is required" }, { status: 400 });
     }
 
-    if (!status || !["OPEN", "INVESTIGATING", "RESOLVED"].includes(status)) {
+    if (!status || !["OPEN", "INVESTIGATING", "RESOLVED", "CLOSED"].includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 

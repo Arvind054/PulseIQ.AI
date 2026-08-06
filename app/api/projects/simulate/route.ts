@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/src/DB/DbConnection";
+import { AiAnalysis } from "@/src/DB/models/AiAnalysisSchema";
 import { Log } from "@/src/DB/models/logSchema";
 import { Incident } from "@/src/DB/models/incidentSchemas";
 import { Project } from "@/src/DB/models/projectSchema";
@@ -94,6 +95,19 @@ export async function POST(req: NextRequest) {
     const createdLogs = await Log.insertMany(logData);
     const logIds = createdLogs.map((l) => l._id);
 
+    const aiAnalysis = await AiAnalysis.create({
+      summary:
+        "A sudden surge in concurrent checkout traffic triggered database connection pool saturation on auth-service, which cascaded into authentication timeouts and downstream checkout failures.",
+      rootCause:
+        "The database client connection pool on auth-service was capped at 20. Concurrent transactional load occupied all available connections and pushed request wait times beyond the timeout threshold.",
+      recommendation:
+        "1. Increase the auth-service database pool size.\n2. Add a circuit breaker or fallback for elevated auth latency.\n3. Deploy PgBouncer or a similar connection pooler in front of PostgreSQL.",
+      model: "gemini-2.5-flash",
+      evidence:
+        "PostgreSQL connection pool exhausted. Active connections: 20 (max: 20). Waiting queue length: 50. Timeout in 10000ms.",
+      confidence: 94,
+    });
+
     // Create a matching incident representing the root cause and suggestions
     const incident = await Incident.create({
       projectId,
@@ -102,7 +116,7 @@ export async function POST(req: NextRequest) {
       status: "OPEN",
       summary: "A sudden surge in concurrent checkout traffic triggered database connection pool saturation on auth-service. This caused user authentication queries to time out, which cascaded to checkout failures on payment-api and degraded delivery times in the notification service.",
       rootCause: "Database client connection pool on auth-service was capped at 20. Concurrent transactional load occupied all connections, leaving downstream service queries waiting in queue until gateway timeout threshold was crossed.",
-      aiSuggestions: "1. Scale the Postgres database client max pool size in auth-service configuration variables from 20 to 100.\n2. Implement a circuit-breaker on order-service to fail-fast or fallback when authentication requests latency exceeds 1500ms.\n3. Deploy PgBouncer in transaction mode in front of your PostgreSQL database to support high connection concurrency efficiently.",
+      aiSuggestions: aiAnalysis._id,
       relatedLogs: logIds,
       createdAt: now,
       updatedAt: now,

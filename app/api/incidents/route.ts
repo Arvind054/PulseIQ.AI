@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
 
     const incidents = await Incident.find({ projectId })
       .sort({ createdAt: -1 })
+      .populate("aiSuggestions")
       .populate("relatedLogs")
       .lean();
 
