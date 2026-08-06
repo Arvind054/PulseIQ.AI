@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/src/DB/DbConnection";
 import { Log } from "@/src/DB/models/logSchema";
 import { Project } from "@/src/DB/models/projectSchema";
+import { detectSeverity } from "@/src/utils/getSeverity";
+import { DetectIncidents } from "@/src/utils/incidentDetector";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -58,7 +60,10 @@ export async function POST(req: NextRequest) {
             environment,
             metadata,
         });
-
+        const severity = detectSeverity(message);
+         if(level == 'ERROR' || severity == "CRITICAL"){
+            await DetectIncidents(project._id, service,severity );
+         }
         return NextResponse.json({ success: true, message: "Log stored successfully.", },
             { status: 201, headers: corsHeaders, }
         );
