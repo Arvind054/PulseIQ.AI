@@ -8,7 +8,9 @@ async function connectToDB(){
     if(!dbUrl){
        throw new Error("Connection URL not Found");
     }
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(dbUrl, {
+         dbName: process.env.DB_NAME! || "pulseiq-ai",
+    });
 }
 
 export async function connectDB(){

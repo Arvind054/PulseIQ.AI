@@ -32,8 +32,9 @@ export async function POST(req: NextRequest) {
         }
 
         // Rrequest body
-        const { service, level, message, environment, metadata } = await req.json();
 
+        const { service, level, message, environment, metadata } = await req.json();;
+    
         // Data Validation
         if (!service || !level || !message) {
             return NextResponse.json({ success: false, message: "service, level and message are required.", },
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
         });
         const severity = detectSeverity(message);
          if(level == 'ERROR' || severity == "CRITICAL"){
-            await DetectIncidents(project._id, service,severity );
+            await DetectIncidents(project._id, service,environment,severity );
          }
         return NextResponse.json({ success: true, message: "Log stored successfully.", },
             { status: 201, headers: corsHeaders, }

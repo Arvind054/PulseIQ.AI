@@ -44,6 +44,12 @@ Do not include markdown, code blocks, or any text outside the JSON object.`
     throw new Error('AI response did not include text');
   }
   const result = JSON.parse(response.text);
+  if (Array.isArray(result.recommendation)) {
+    result.recommendation = result.recommendation.join("\n");
+  }
+  if (result.recommendation && typeof result.recommendation !== "string") {
+    result.recommendation = String(result.recommendation);
+  }
   result.model = "gemini-2.5-flash";
    return result;
 };
