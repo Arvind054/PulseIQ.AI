@@ -7,7 +7,7 @@ import { AiAnalysis } from "../DB/models/AiAnalysisSchema";
 
 
 export async function DetectIncidents(projectId: mongoose.Types.ObjectId, service: string, environment: string, severity : string) {
-
+     console.log("System Fault. ✅✅✅✅✅");
     try {
         await connectDB();
         const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
@@ -16,19 +16,20 @@ export async function DetectIncidents(projectId: mongoose.Types.ObjectId, servic
             service,
             level: "ERROR",
             timestamp: {
-                gte: oneMinuteAgo,
+                $gte: oneMinuteAgo,
             }
         }).sort({ createdAt: 1 }).limit(100);
 
         const errorCount = errorLogs.length;
         if (errorCount < 5 && severity != "CRITICAL") return;
+        if (errorCount === 0) return;
         
         const existingIncident = await Incident.findOne({
             projectId,
             service,
             status: "OPEN",
         });
-
+        
         if (existingIncident) {
             await Incident.findByIdAndUpdate(existingIncident._id, {
                 $addToSet: {
@@ -39,6 +40,7 @@ export async function DetectIncidents(projectId: mongoose.Types.ObjectId, servic
             });
             return ;
         };
+        console.log("Creating Incident✅✅✅");
         const suggestionsData = await getAiSuggestions(service, environment, severity, errorLogs);
        const suggestion = await AiAnalysis.create({
         summary: suggestionsData.summary,
@@ -55,8 +57,8 @@ export async function DetectIncidents(projectId: mongoose.Types.ObjectId, servic
             serverity: "HIGH",
             status: "OPEN",
             relatedLogs: errorLogs.map(log => log._id),
-            firstSeen: errorLogs[0].createdAt,
-            lastSeen: errorLogs[errorLogs.length - 1].createdAt,
+            firstSeen: errorLogs[0]?.createdAt,
+            lastSeen: errorLogs[errorLogs.length - 1]?.createdAt,
             aiSuggestions:suggestion._id,
         });
 
