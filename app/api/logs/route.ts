@@ -1,5 +1,6 @@
 
 import { auth } from "@/lib/auth";
+import { recordErrorLog } from "@/lib/errorCounter";
 import { connectDB } from "@/src/DB/DbConnection";
 import { Log } from "@/src/DB/models/logSchema";
 import { Project } from "@/src/DB/models/projectSchema";
@@ -34,14 +35,20 @@ export async function POST(req: NextRequest) {
         // Rrequest body
 
         const { service, level, message, environment, metadata } = await req.json();;
-    
+          const VALID_LEVELS = ["WARN", "ERROR", "INFO", "DEBUG"];
+
         // Data Validation
         if (!service || !level || !message) {
             return NextResponse.json({ success: false, message: "service, level and message are required.", },
                 { status: 400, headers: corsHeaders, }
             );
         }
-
+       if(!VALID_LEVELS.includes(level)){
+         return NextResponse.json(
+                { success: false, message: `level must be one of ${VALID_LEVELS.join(", ")}` },
+                { status: 400, headers: corsHeaders }
+            );
+       }
         // Validate API Key
         const project = await Project.findOne({ apiKey });
 
@@ -62,9 +69,13 @@ export async function POST(req: NextRequest) {
             metadata,
         });
         const severity = detectSeverity(message);
-         if(level == 'ERROR' || severity == "CRITICAL"){
-            await DetectIncidents(project._id, service,environment,severity );
-         }
+        if(severity == "CRITICAL"){
+           DetectIncidents(project._id, service, environment,severity, "CRITICAL_LOG").catch((err)=>console.log("Detect Incidents (Critical) failled: ", err));
+        }
+        if(level == "ERROR"){
+           recordErrorLog(project._id.toString(),service).catch((err)=>
+           console.log("recordErrorLog failled: ", err));
+        }
         return NextResponse.json({ success: true, message: "Log stored successfully.", },
             { status: 201, headers: corsHeaders, }
         );
