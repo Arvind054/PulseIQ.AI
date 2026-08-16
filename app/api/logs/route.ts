@@ -1,5 +1,6 @@
 
 import { auth } from "@/lib/auth";
+import { recordErrorLog } from "@/lib/errorCounter";
 import { connectDB } from "@/src/DB/DbConnection";
 import { Log } from "@/src/DB/models/logSchema";
 import { Project } from "@/src/DB/models/projectSchema";
