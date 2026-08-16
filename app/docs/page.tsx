@@ -21,7 +21,7 @@ const sections = [
 
 function CodeBlock({ children }: { children: string }) {
   return (
-    <pre className="overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50 p-4 font-mono text-sm leading-relaxed text-zinc-800 dark:border-white/[0.08] dark:bg-[#0a0e17] dark:text-zinc-300">
+    <pre className="overflow-x-auto rounded-md border border-[color:var(--card-border)] bg-zinc-50 p-4 font-mono text-sm leading-relaxed dark:bg-zinc-900/50">
       <code>{children}</code>
     </pre>
   );
@@ -37,32 +37,24 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-28">
-      <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-      <div className="mt-4 space-y-4 text-zinc-600 dark:text-zinc-400">{children}</div>
+    <section id={id} className="scroll-mt-24">
+      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+      <div className="mt-4 space-y-4 text-muted">{children}</div>
     </section>
   );
 }
 
 export default function DocsPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 grid-bg" />
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 glow-orb" />
-
+    <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="relative mx-auto max-w-6xl px-6 pt-28 pb-20">
-        <div className="mb-12">
-          <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400">
-            Documentation
-          </p>
-          <h1 className="mt-2 text-4xl font-bold tracking-tight">
-            PulseIQ.AI SDK
-          </h1>
-          <p className="mt-3 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-            Install the SDK, stream your logs, and let AI trace errors back to
-            their root cause across your services.
+      <div className="mx-auto max-w-6xl px-6 pt-24 pb-20">
+        <div className="mb-12 border-b border-[color:var(--card-border)] pb-8">
+          <p className="text-sm font-medium text-accent">Documentation</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">SDK reference</h1>
+          <p className="mt-3 max-w-2xl text-muted">
+            Install the SDK, configure your API key, and start sending logs to PulseIQ.AI.
           </p>
         </div>
 
@@ -74,7 +66,7 @@ export default function DocsPage() {
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className="block rounded-lg px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+                  className="block rounded-md px-3 py-2 text-sm text-muted transition-colors hover:bg-zinc-100 hover:text-foreground dark:hover:bg-zinc-800"
                 >
                   {section.label}
                 </a>
@@ -118,7 +110,7 @@ pnpm add @pulseiq/sdk`}</CodeBlock>
                 For Go, Rust, or other languages, use our{" "}
                 <a
                   href="#opentelemetry"
-                  className="text-cyan-600 underline-offset-2 hover:underline dark:text-cyan-400"
+                  className="text-accent underline-offset-2 hover:underline"
                 >
                   OpenTelemetry exporter
                 </a>{" "}
@@ -131,7 +123,7 @@ pnpm add @pulseiq/sdk`}</CodeBlock>
                 Generate an API key from{" "}
                 <Link
                   href="/dashboard"
-                  className="text-cyan-600 underline-offset-2 hover:underline dark:text-cyan-400"
+                  className="text-accent underline-offset-2 hover:underline"
                 >
                   Dashboard → Settings → API Keys
                 </Link>
@@ -158,10 +150,10 @@ PulseIQ.init({
   enableCascadeTracing: true,     // map failure chains across services
 });`}</CodeBlock>
               <p>Available configuration options:</p>
-              <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/[0.08]">
+              <div className="overflow-x-auto rounded-md border border-[color:var(--card-border)]">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                    <tr className="border-b border-[color:var(--card-border)] bg-zinc-50 dark:bg-zinc-900/50">
                       <th className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-200">
                         Option
                       </th>
@@ -184,7 +176,7 @@ PulseIQ.init({
                       ["flushInterval", "No", "Flush interval in ms (default: 5000)"],
                     ].map(([option, required, desc]) => (
                       <tr key={option}>
-                        <td className="px-4 py-3 font-mono text-cyan-700 dark:text-cyan-400">
+                        <td className="px-4 py-3 font-mono text-accent">
                           {option}
                         </td>
                         <td className="px-4 py-3">{required}</td>
@@ -270,7 +262,7 @@ exporter: new OTLPTraceExporter({
 
             <Section id="troubleshooting" title="Troubleshooting">
               <div className="space-y-6">
-                <div className="rounded-xl border border-zinc-200 p-4 dark:border-white/[0.08]">
+                <div className="rounded-md border border-[color:var(--card-border)] p-4">
                   <p className="font-medium text-zinc-900 dark:text-zinc-200">
                     Logs not appearing in the dashboard?
                   </p>
@@ -283,7 +275,7 @@ exporter: new OTLPTraceExporter({
                     is allowed.
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200 p-4 dark:border-white/[0.08]">
+                <div className="rounded-md border border-[color:var(--card-border)] p-4">
                   <p className="font-medium text-zinc-900 dark:text-zinc-200">
                     Cascade graph is incomplete?
                   </p>
@@ -294,7 +286,7 @@ exporter: new OTLPTraceExporter({
                     service boundaries.
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200 p-4 dark:border-white/[0.08]">
+                <div className="rounded-md border border-[color:var(--card-border)] p-4">
                   <p className="font-medium text-zinc-900 dark:text-zinc-200">
                     Need help?
                   </p>
@@ -302,7 +294,7 @@ exporter: new OTLPTraceExporter({
                     Open the Dashboard support chat or email{" "}
                     <a
                       href="mailto:support@pulseiq.ai"
-                      className="text-cyan-600 underline-offset-2 hover:underline dark:text-cyan-400"
+                      className="text-accent underline-offset-2 hover:underline"
                     >
                       support@pulseiq.ai
                     </a>

@@ -236,74 +236,49 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
   const openIncidentsCount = incidents.filter((i) => i.status === "OPEN" || i.status === "INVESTIGATING").length;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      {/* Workspace Header info */}
-      <div className="flex flex-col gap-4 border-b border-(--card-border) pb-6 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div className="flex flex-col gap-4 border-b border-[color:var(--card-border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">
-            <Link href="/dashboard" className="hover:underline transition">Dashboard</Link>
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <Link href="/dashboard" className="hover:text-foreground">
+              Projects
+            </Link>
             <span>/</span>
-            <span className="text-muted">Project Workspace</span>
+            <span>{project.name}</span>
           </div>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-            {project.name}
-          </h1>
-          <p className="mt-2 text-sm text-muted leading-relaxed max-w-2xl">
-            {project.description?.trim() || "No workspace configuration has been set. Review settings to modify details."}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white dark:border-white/5 dark:bg-white/5 hover:bg-zinc-550 px-4 py-2.5 text-xs font-semibold transition hover:scale-[1.02] active:scale-[0.98]"
-          >
-            ← Back to Dashboard
-          </Link>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">{project.name}</h1>
+          {project.description ? (
+            <p className="mt-2 max-w-2xl text-sm text-muted">{project.description}</p>
+          ) : null}
         </div>
       </div>
 
-      {/* Tabs Selector Navigation Bar */}
-      <div className="mt-6 flex border-b border-(--card-border)">
-        <button
-          type="button"
-          onClick={() => setActiveTab("logs")}
-          className={`px-4 py-3.5 text-sm font-semibold border-b-2 transition relative ${
-            activeTab === "logs"
-              ? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
-              : "border-transparent text-zinc-450 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          Telemetry Log Stream
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("incidents")}
-          className={`px-4 py-3.5 text-sm font-semibold border-b-2 transition flex items-center gap-2 relative ${
-            activeTab === "incidents"
-              ? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
-              : "border-transparent text-zinc-450 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          AI Incident Diagnostics
-          {openIncidentsCount > 0 && (
-            <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white leading-none">
-              {openIncidentsCount}
+      <div className="mt-6 flex gap-1 border-b border-[color:var(--card-border)]">
+        {[
+          { id: "logs" as const, label: "Logs" },
+          { id: "incidents" as const, label: "Incidents", count: openIncidentsCount },
+          { id: "settings" as const, label: "Settings" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === tab.id
+                ? "border-accent text-foreground"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              {tab.label}
+              {tab.count ? (
+                <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  {tab.count}
+                </span>
+              ) : null}
             </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("settings")}
-          className={`px-4 py-3.5 text-sm font-semibold border-b-2 transition relative ${
-            activeTab === "settings"
-              ? "border-cyan-500 text-cyan-600 dark:text-cyan-400"
-              : "border-transparent text-zinc-450 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          Workspace Settings
-        </button>
+          </button>
+        ))}
       </div>
 
       {/* Content panes based on activeTab */}
@@ -356,7 +331,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                       key={incident._id}
                       className={`overflow-hidden rounded-3xl border bg-card transition-all shadow-sm ${
                         isExpanded
-                          ? "border-cyan-500/40 ring-1 ring-cyan-500/10"
+                          ? "border-accent/40 ring-1 ring-accent/10"
                           : "border-(--card-border) hover:border-zinc-350 dark:hover:border-zinc-850"
                       }`}
                     >
@@ -414,7 +389,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                         <div className="border-t border-(--card-border) bg-zinc-50/50 dark:bg-white/1 p-6 space-y-6">
                           {/* Failure Chain Visual */}
                           <div className="rounded-2xl border border-(--card-border) bg-card p-5">
-                            <h5 className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+                            <h5 className="text-[10px] font-bold uppercase tracking-wider text-accent">
                               Failure Propagation Chain
                             </h5>
                             
@@ -482,8 +457,8 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                           </div>
 
                           {/* Suggestions */}
-                          <div className="rounded-2xl border border-cyan-500/10 bg-cyan-500/2 p-5">
-                            <h5 className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
+                          <div className="rounded-2xl border border-accent/10 bg-cyan-500/2 p-5">
+                            <h5 className="text-[10px] font-extrabold uppercase tracking-wider text-accent flex items-center gap-1.5">
                               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                               </svg>
@@ -507,16 +482,16 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                                   <span className="font-semibold text-zinc-900 dark:text-white">Recommendation: </span>
                                   {incident.aiSuggestions.recommendation || "No recommendation provided."}
                                 </p>
-                                <div className="flex flex-wrap gap-2 pt-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
-                                  <span className="rounded-full bg-cyan-500/10 px-2 py-1">Model: {incident.aiSuggestions.model || "unknown"}</span>
-                                  <span className="rounded-full bg-cyan-500/10 px-2 py-1">Confidence: {incident.aiSuggestions.confidence ?? 0}%</span>
+                                <div className="flex flex-wrap gap-2 pt-1 text-[10px] font-semibold uppercase tracking-wider text-accent">
+                                  <span className="rounded-full bg-accent-muted px-2 py-1">Model: {incident.aiSuggestions.model || "unknown"}</span>
+                                  <span className="rounded-full bg-accent-muted px-2 py-1">Confidence: {incident.aiSuggestions.confidence ?? 0}%</span>
                                 </div>
                               </div>
                             ) : typeof incident.aiSuggestions === "string" ? (
                               <div className="mt-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-line pl-1.5 space-y-1">
                                 {incident.aiSuggestions.split("\n").map((item, index) => (
                                   <p key={index} className="flex items-start gap-1.5">
-                                    <span className="text-cyan-500 font-bold select-none">•</span>
+                                    <span className="text-accent font-bold select-none">•</span>
                                     <span>{item.replace(/^\d+\.\s*/, "")}</span>
                                   </p>
                                 ))}
@@ -537,7 +512,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                               <select
                                 value={incident.status}
                                 onChange={(e) => handleUpdateIncidentStatus(incident._id, e.target.value as Incident["status"])}
-                                className="rounded-xl border border-(--card-border) bg-card px-3 py-2 text-xs font-semibold text-zinc-700 outline-none transition focus:border-cyan-500 dark:text-zinc-300"
+                                className="rounded-xl border border-(--card-border) bg-card px-3 py-2 text-xs font-semibold text-zinc-700 outline-none transition focus:border-accent dark:text-zinc-300"
                               >
                                 <option value="OPEN">Open</option>
                                 <option value="INVESTIGATING">Investigating</option>
@@ -579,7 +554,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 dark:border-white/5 dark:bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:bg-white dark:focus:bg-[#06080f] dark:focus:border-cyan-400"
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 dark:border-white/5 dark:bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-accent focus:bg-white dark:focus:bg-[#06080f] dark:focus:border-cyan-400"
                     required
                   />
                 </div>
@@ -593,7 +568,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
-                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 dark:border-white/5 dark:bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:bg-white dark:focus:bg-[#06080f] dark:focus:border-cyan-400"
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 dark:border-white/5 dark:bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-accent focus:bg-white dark:focus:bg-[#06080f] dark:focus:border-cyan-400"
                   />
                 </div>
 
@@ -612,7 +587,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                 <button
                   type="submit"
                   disabled={savingSettings}
-                  className="rounded-xl bg-cyan-600 px-5 py-3 text-xs font-bold text-white transition hover:bg-cyan-700 active:scale-[0.98]"
+                  className="rounded-xl bg-accent px-5 py-3 text-xs font-bold text-white transition hover:bg-accent-hover active:scale-[0.98]"
                 >
                   {savingSettings ? "Saving Settings..." : "Save workspace details"}
                 </button>
@@ -673,7 +648,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                     type="button"
                     onClick={() => setIntegrationLang("curl")}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      integrationLang === "curl" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-zinc-550 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5"
+                      integrationLang === "curl" ? "bg-accent-muted text-accent" : "text-zinc-550 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5"
                     }`}
                   >
                     cURL
@@ -682,7 +657,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                     type="button"
                     onClick={() => setIntegrationLang("node")}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      integrationLang === "node" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-zinc-550 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5"
+                      integrationLang === "node" ? "bg-accent-muted text-accent" : "text-zinc-550 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5"
                     }`}
                   >
                     Node.js
@@ -691,7 +666,7 @@ def log_to_pulseiq(service, level, message, env="production", metadata=None):
                     type="button"
                     onClick={() => setIntegrationLang("python")}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      integrationLang === "python" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-zinc-550 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5"
+                      integrationLang === "python" ? "bg-accent-muted text-accent" : "text-zinc-550 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5"
                     }`}
                   >
                     Python

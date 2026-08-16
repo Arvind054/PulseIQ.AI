@@ -105,13 +105,11 @@ export function LogsPanel({ projectId }: LogsPanelProps) {
   }
 
   return (
-    <div className="rounded-[28px] border border-[color:var(--card-border)] bg-[var(--card)] p-6 shadow-sm">
-      <div className="flex flex-col gap-4 border-b border-[color:var(--card-border)] pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="rounded-lg border border-[color:var(--card-border)] bg-card">
+      <div className="flex flex-col gap-4 border-b border-[color:var(--card-border)] p-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">
-            Log Stream
-          </p>
-          <h2 className="mt-1 text-xl font-bold text-zinc-900 dark:text-white">Recent Activity</h2>
+          <h2 className="text-sm font-medium">Logs</h2>
+          <p className="text-xs text-muted">Recent events from your services</p>
         </div>
 
         <div className="grid gap-2 min-w-[320px] sm:grid-cols-3">
