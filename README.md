@@ -1,6 +1,6 @@
 # PulseIQ.AI
 
-> Live locally at: http://localhost:3000/
+> Live at: https://pulse-iq-ai.vercel.app/
 
 PulseIQ.AI is an observability and incident analysis platform for engineering teams. It collects service logs, correlates failures across environments, and uses Gemini-powered analysis to identify likely root causes, recommend recovery actions, and surface active incidents in a dashboard.
 
